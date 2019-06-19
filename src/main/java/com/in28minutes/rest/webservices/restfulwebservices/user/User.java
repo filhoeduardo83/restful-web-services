@@ -2,11 +2,17 @@ package com.in28minutes.rest.webservices.restfulwebservices.user;
 
 import java.util.Date;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.Size;
 
+@Entity
 public class User {
-
+	
+	@Id
+	@GeneratedValue
 	private Integer id;
 	
 	@Size(min = 2,message = "O tamanho do nome deve ser maior que 2")
@@ -16,6 +22,12 @@ public class User {
 	private Date birthDate;
 	
 	
+	public User() {
+		super();
+	}
+
+
+
 	public User(int id, String name, Date birthDate) {
 		super();
 		this.id = id;
