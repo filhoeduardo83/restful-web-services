@@ -22,25 +22,31 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.in28minutes.rest.webservices.restfulwebservices.exception.ListaVaziaException;
 import com.in28minutes.rest.webservices.restfulwebservices.exception.UsuarioNaoEncontadoException;
-
+import com.in28minutes.rest.webservices.restfulwebservices.post.Post;
+import com.in28minutes.rest.webservices.restfulwebservices.post.PostRepository;
+//Controlador exemplo utilizando o banco de dados. Ele tiliza o Repository para acessar as tabelas do banco
 @RestController
 public class UserJPAResource {
 
-	@Autowired
-	public UserDaoService service;
 	
 	@Autowired
-	public UserRepository UserRepository;
+	public UserRepository userRepository;
+	
+	
+	@Autowired
+	public PostRepository postRepository;
 
+//
 	@GetMapping("jpa/users")
 	public List<User> retrieveAllUsers() {
-		return UserRepository.findAll();
+		return userRepository.findAll();
 
 	}
 
+//Consulta um usuário por id
 	@GetMapping("/jpa/users/{id}")
 	public Optional<User> retrieveOneUser(@PathVariable Integer id) {
-		Optional<User> user = UserRepository.findById(id);
+		Optional<User> user = userRepository.findById(id);
 		if (user==null) {
 			//throw new UsuarioNaoEncontadoException("id - "+ id);
 			throw new UsuarioNaoEncontadoException("id - "+ id);
@@ -50,14 +56,10 @@ public class UserJPAResource {
 
 	}
 
-
+//Apaga um usuário
 	@DeleteMapping("jpa/users/{id}")
 	public void deleteOneUser(@PathVariable Integer id) {
-		User user = service.deleteUser(id);
-		if (user==null) {
-			//throw new UsuarioNaoEncontadoException("id - "+ id);
-			throw new UsuarioNaoEncontadoException("id - "+ id);
-		}
+		userRepository.deleteById(id);
 	}
 	/*
 	 * @PostMapping("/users") 
@@ -68,15 +70,47 @@ public class UserJPAResource {
 	 */
 
 	
-
-	 @PostMapping("jpa//users") 
+//Insere usuário
+	 @PostMapping("jpa/users") 
 	 public ResponseEntity<Object> addUser(@Valid @RequestBody User newUser){
 		 //Adiciona o Usuário
-		 service.saveUser(newUser);
+		 User savedUser = userRepository.save(newUser);
 		 //Monta a URI de resposta baseado no usuário criado
 		 URI local = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newUser.getId()).toUri();
 		 //retorna uma RespostaEntidy p retornar 201
 		 return ResponseEntity.created(local).build();
 	 }
 	 
+//Busca dos posts de um usuário	 
+		@GetMapping("jpa/users/{id}/posts")
+		public List<Post> retrievePosts(@PathVariable Integer id) {
+			//verifica se usuário existe
+			Optional<User> user = userRepository.findById(id);
+			if (!user.isPresent()) {
+				throw new UsuarioNaoEncontadoException("id - "+ id);
+			}
+			
+			
+			return user.get().getPosts();
+
+		}
+		
+		
+//Insere post de um usuário
+		 @PostMapping("jpa/users/{id}/posts") 
+		 public ResponseEntity<Object> addPost(@PathVariable int id, @RequestBody Post post){
+			//verifica se usuário existe
+			 Optional<User> userOptional = userRepository.findById(id);
+				if (!userOptional.isPresent()) {
+					throw new UsuarioNaoEncontadoException("id - "+ id);
+				}
+			 User user = userOptional.get();
+			 post.setUser(user);
+			 postRepository.save(post);	 
+			 
+			 //Monta a URI de resposta baseado no posthj criado
+			 URI local = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(post.getId()).toUri();
+			 //retorna uma RespostaEntidy p retornar 201
+			 return ResponseEntity.created(local).build();
+		 }
 }

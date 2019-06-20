@@ -21,7 +21,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import com.in28minutes.rest.webservices.restfulwebservices.exception.ListaVaziaException;
 import com.in28minutes.rest.webservices.restfulwebservices.exception.UsuarioNaoEncontadoException;
-
+//Primeiro controlador exemplo sem utilizar banco de dados. Ele tiliza o DAO service para acessar uma 
 @RestController
 public class UserResource {
 
